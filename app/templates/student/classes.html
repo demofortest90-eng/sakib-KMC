@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}ক্লাস{% endblock %}
+{% block heading %}ক্লাস{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>ক্লাস</h1><p>{% if active %}{{ active.name }}{% else %}আগে একটি কোর্স বেছে নিন{% endif %}</p></div></div>
+
+{% if classes %}
+<div class="grid grid-3">
+  {% for c in classes %}
+  <a class="card class-card" href="{{ url_for('student.watch_class', cid=c._id) }}">
+    <div class="class-thumb">
+      <img src="https://i.ytimg.com/vi/{{ c.youtube_id }}/hqdefault.jpg" alt="{{ c.name }}" loading="lazy">
+      <span class="play-badge">▶</span>
+      {% if c.is_live %}<span class="tag-live" style="position:absolute;top:8px;left:8px;">লাইভ</span>{% endif %}
+    </div>
+    <div style="padding:12px 14px;">
+      <strong>{{ c.name }}</strong>
+      {% if c.description %}<div class="muted" style="font-size:13px;margin-top:3px;">{{ c.description[:90] }}{% if c.description|length > 90 %}…{% endif %}</div>{% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card"><div class="empty">এই কোর্সে এখনো কোনো ক্লাস প্রকাশ করা হয়নি।</div></div>
+{% endif %}
+{% endblock %}

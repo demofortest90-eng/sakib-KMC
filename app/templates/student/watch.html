@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}{{ cls.name }}{% endblock %}
+{% block heading %}ক্লাস{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ cls.name }}</h1><p>{{ cls.description or 'দেখুন এবং টাইমস্ট্যাম্পসহ নোট নিন।' }}</p></div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('student.class_list') }}">← ফিরে যান</a>
+</div>
+
+<div class="player-layout">
+  <div>
+    <div class="player-shell" id="shell">
+      <div id="ytplayer"></div>
+      <div class="player-overlay" id="overlay"></div>
+      <div class="player-controls" id="controls">
+        <div class="seek" id="seek"><div class="seek-fill" id="seekFill"></div></div>
+        <div class="ctrl-row">
+          <button id="playBtn" title="চালু/বন্ধ (Space)">
+            <svg id="playIcon" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+          <button id="backBtn" title="১০ সেকেন্ড পেছনে (←)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="11 19 2 12 11 5 11 19"/><polyline points="22 19 13 12 22 5 22 19"/></svg></button>
+          <button id="fwdBtn" title="১০ সেকেন্ড সামনে (→)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="13 19 22 12 13 5 13 19"/><polyline points="2 19 11 12 2 5 2 19"/></svg></button>
+          <button id="muteBtn" title="মিউট (M)"><svg id="muteIcon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 010 7"/></svg></button>
+          <span class="ctrl-time" id="time">0:00 / 0:00</span>
+          <span class="ctrl-spacer"></span>
+          <button id="fsBtn" title="ফুলস্ক্রিন (F)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M16 21h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px;justify-content:space-between;">
+      <span class="muted" id="monStatus" style="font-size:13px;">● মনিটরিং চালু — লাইভ ক্লাস চলাকালীন এই ট্যাবে থাকুন।</span>
+      <button class="btn btn-success btn-sm" id="completeBtn">সম্পন্ন হিসেবে চিহ্নিত করুন (+২০ XP)</button>
+    </div>
+  </div>
+
+  <div class="card notes-panel">
+    <div class="card-hd"><h3>আমার নোট</h3><span class="muted" style="font-size:12px;">স্বয়ংক্রিয় সংরক্ষণ</span></div>
+    <div class="note-input">
+      <input type="text" id="noteText" placeholder="নোট লিখুন… (সময় ধরে রাখা হবে)" autocomplete="off">
+      <button class="btn btn-sm" id="addNote">যোগ</button>
+    </div>
+    <div class="muted" style="font-size:12px;margin-bottom:8px;">সময়: <b id="capTime">0:00</b> — যেকোনো নোটে চাপলে সেখানে চলে যাবে।</div>
+    <div class="note-list" id="noteList">
+      {% for n in notes %}
+      <div class="note" data-t="{{ n.timestamp_seconds }}" data-id="{{ n._id }}">
+        <div class="row" style="justify-content:space-between;align-items:flex-start;">
+          <span class="note-time">{{ '%d:%02d'|format(n.timestamp_seconds // 60, n.timestamp_seconds % 60) }}</span>
+          <button class="note-del" data-id="{{ n._id }}" title="মুছুন">×</button>
+        </div>
+        <div class="note-text">{{ n.text }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if not notes %}<div class="empty" id="noteEmpty">এখনো কোনো নোট নেই।</div>{% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+const VIDEO_ID = "{{ cls.youtube_id }}";
+const CLASS_ID = "{{ cls._id }}";
+const IS_LIVE  = {{ 'true' if cls.is_live else 'false' }};
+const SAVE_URL = "{{ url_for('student.save_note') }}";
+const COMPLETE_URL = "{{ url_for('student.complete_class', cid=cls._id) }}";
+let player, ready = false, dur = 0, ticker = null;
+function fmt(s){ s=Math.floor(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function onYouTubeIframeAPIReady(){
+  player = new YT.Player('ytplayer', {
+    videoId: VIDEO_ID,
+    playerVars: { controls:0, modestbranding:1, rel:0, fs:0, iv_load_policy:3, disablekb:1, playsinline:1, showinfo:0 },
+    events: { onReady: () => { ready = true; dur = player.getDuration(); startTicker(); }, onStateChange: onState }
+  });
+}
+function onState(e){
+  const playing = e.data === YT.PlayerState.PLAYING;
+  document.getElementById('playIcon').innerHTML = playing
+    ? '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
+    : '<polygon points="5 3 19 12 5 21 5 3"/>';
+  if(e.data === YT.PlayerState.ENDED) markComplete();
+}
+function startTicker(){
+  if(ticker) clearInterval(ticker);
+  ticker = setInterval(() => {
+    if(!ready) return;
+    const t = player.getCurrentTime() || 0;
+    dur = player.getDuration() || dur;
+    document.getElementById('time').textContent = fmt(t)+' / '+fmt(dur);
+    document.getElementById('seekFill').style.width = (dur ? (t/dur*100) : 0)+'%';
+    if(!capturing) document.getElementById('capTime').textContent = fmt(t);
+  }, 500);
+}
+function toggle(){ if(!ready) return; const s=player.getPlayerState(); (s===YT.PlayerState.PLAYING) ? player.pauseVideo() : player.playVideo(); }
+function skip(n){ if(ready) player.seekTo(Math.max(0, player.getCurrentTime()+n), true); }
+let muted=false;
+function mute(){ if(!ready) return; muted=!muted; muted?player.mute():player.unMute();
+  document.getElementById('muteIcon').innerHTML = muted
+   ? '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'
+   : '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 010 7"/>'; }
+function fullscreen(){ const el=document.getElementById('shell');
+  if(!document.fullscreenElement){ el.requestFullscreen && el.requestFullscreen(); } else { document.exitFullscreen && document.exitFullscreen(); } }
+document.getElementById('overlay').addEventListener('click', toggle);
+document.getElementById('playBtn').addEventListener('click', toggle);
+document.getElementById('backBtn').addEventListener('click', ()=>skip(-10));
+document.getElementById('fwdBtn').addEventListener('click', ()=>skip(10));
+document.getElementById('muteBtn').addEventListener('click', mute);
+document.getElementById('fsBtn').addEventListener('click', fullscreen);
+document.getElementById('seek').addEventListener('click', e=>{
+  if(!ready||!dur) return; const r=e.currentTarget.getBoundingClientRect();
+  player.seekTo(((e.clientX-r.left)/r.width)*dur, true);
+});
+document.addEventListener('keydown', e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if(e.code==='Space'){ e.preventDefault(); toggle(); }
+  else if(e.code==='ArrowRight') skip(10);
+  else if(e.code==='ArrowLeft') skip(-10);
+  else if(e.key.toLowerCase()==='f') fullscreen();
+  else if(e.key.toLowerCase()==='m') mute();
+});
+let capturing=false, capturedAt=0;
+const noteInput=document.getElementById('noteText');
+const noteList=document.getElementById('noteList');
+noteInput.addEventListener('input', ()=>{
+  if(!capturing && noteInput.value.length){
+    capturing=true; capturedAt = ready ? Math.floor(player.getCurrentTime()) : 0;
+    document.getElementById('capTime').textContent = fmt(capturedAt);
+  }
+  if(!noteInput.value.length) capturing=false;
+});
+noteInput.addEventListener('keydown', e=>{ if(e.key==='Enter') saveNote(); });
+document.getElementById('addNote').addEventListener('click', saveNote);
+function saveNote(){
+  const text=noteInput.value.trim(); if(!text) return;
+  const ts = capturing ? capturedAt : (ready?Math.floor(player.getCurrentTime()):0);
+  fetch(SAVE_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text, class_id:CLASS_ID, timestamp_seconds:ts})})
+    .then(r=>r.json()).then(d=>{
+      if(d.ok){ addNoteRow(d.id, d.timestamp_seconds, d.text);
+        noteInput.value=''; capturing=false;
+        const em=document.getElementById('noteEmpty'); if(em) em.remove(); }
+    });
+}
+function addNoteRow(id, t, text){
+  const div=document.createElement('div');
+  div.className='note'; div.dataset.t=t; div.dataset.id=id;
+  div.innerHTML='<div class="row" style="justify-content:space-between;align-items:flex-start;">'+
+    '<span class="note-time">'+fmt(t)+'</span>'+
+    '<button class="note-del" data-id="'+id+'" title="মুছুন">×</button></div>'+
+    '<div class="note-text"></div>';
+  div.querySelector('.note-text').textContent=text;
+  noteList.prepend(div);
+}
+noteList.addEventListener('click', e=>{
+  if(e.target.classList.contains('note-del')){
+    const id=e.target.dataset.id;
+    fetch('/student/api/notes/'+id+'/delete',{method:'POST'}).then(()=>{ e.target.closest('.note').remove(); });
+    e.stopPropagation(); return;
+  }
+  const note=e.target.closest('.note');
+  if(note && ready){ player.seekTo(parseInt(note.dataset.t,10), true); player.playVideo(); }
+});
+function markComplete(){
+  fetch(COMPLETE_URL,{method:'POST'}).then(r=>r.json()).then(d=>{
+    if(d.ok && window.toast) toast('✅ ক্লাস সম্পন্ন! +২০ XP');
+  });
+}
+document.getElementById('completeBtn').addEventListener('click', markComplete);
+if(window.eduSocket){
+  const sock=window.eduSocket;
+  sock.emit('join_class', {class_id:CLASS_ID, name:"{{ current_user.doc.get('name') }}"});
+  document.addEventListener('visibilitychange', ()=>{
+    const hidden=document.hidden;
+    sock.emit('tab_state', {class_id:CLASS_ID, hidden:hidden, name:"{{ current_user.doc.get('name') }}"});
+    const s=document.getElementById('monStatus');
+    s.textContent = hidden ? '● আপনি ট্যাব ছেড়েছেন — এটি রেকর্ড হলো।' : '● মনিটরিং চালু — আপনি উপস্থিত।';
+    s.style.color = hidden ? 'var(--red)' : '';
+  });
+  if(IS_LIVE){ sock.emit('permission_result', {class_id:CLASS_ID, granted:true, name:"{{ current_user.doc.get('name') }}"}); }
+  window.addEventListener('beforeunload', ()=> sock.emit('leave_class', {class_id:CLASS_ID}));
+}
+</script>
+{% endblock %}

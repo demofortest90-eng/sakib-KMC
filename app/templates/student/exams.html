@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}পরীক্ষা{% endblock %}
+{% block heading %}পরীক্ষা{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>পরীক্ষা</h1><p>{% if active %}{{ active.name }}{% else %}আগে একটি কোর্স বেছে নিন{% endif %}</p></div></div>
+
+{% if exams %}
+<div class="grid grid-2">
+  {% for ex in exams %}
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;">
+      <div>
+        <strong style="font-size:16px;">{{ ex.title }}</strong>
+        <div class="row" style="margin-top:6px;gap:6px;">
+          <span class="pill {{ 'pill-blue' if ex.type=='mcq' else 'pill-amber' }}">{{ ex.type|upper }}</span>
+          {% if ex.status == 'live' %}<span class="pill pill-green">● এখন চলছে</span>
+          {% elif ex.status == 'upcoming' %}<span class="pill pill-gray">আসন্ন</span>
+          {% else %}<span class="pill pill-red">শেষ</span>{% endif %}
+          {% if ex.taken %}<span class="pill pill-green">জমা হয়েছে</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="muted" style="font-size:13px;margin:10px 0;">
+      {{ ex.questions|length }} টি প্রশ্ন
+      {% if ex.start_time %}· শুরু {{ ex.start_time|replace('T',' ') }}{% endif %}
+      {% if ex.end_time %}· শেষ {{ ex.end_time|replace('T',' ') }}{% endif %}
+    </div>
+    {% if ex.taken %}
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('student.exam_result', eid=ex._id) }}">ফলাফল দেখুন</a>
+    {% elif ex.status == 'live' %}
+      <a class="btn btn-sm" href="{{ url_for('student.take_exam', eid=ex._id) }}">পরীক্ষা শুরু →</a>
+    {% else %}
+      <button class="btn btn-sm" disabled>{{ 'এখনো খোলেনি' if ex.status=='upcoming' else 'বন্ধ' }}</button>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card"><div class="empty">এই কোর্সে এখনো কোনো পরীক্ষা নির্ধারিত হয়নি।</div></div>
+{% endif %}
+{% endblock %}

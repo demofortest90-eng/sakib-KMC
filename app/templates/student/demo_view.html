@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}{{ demo.name }}{% endblock %}
+{% block heading %}ডেমনস্ট্রেশন{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ demo.name }}</h1><p>নিচের ডেমোটির সাথে ইন্টারঅ্যাক্ট করুন।</p></div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('student.demo_list') }}">← ফিরে যান</a>
+</div>
+<div class="card" style="padding:0;overflow:hidden;">
+  <iframe class="demo-frame" src="{{ url_for('student.demo_raw', did=demo._id) }}"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"
+          title="{{ demo.name }}"></iframe>
+</div>
+{% endblock %}

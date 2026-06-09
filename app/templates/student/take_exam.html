@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}{{ exam.title }}{% endblock %}
+{% block heading %}{{ exam.title }}{% endblock %}
+{% block content %}
+<div class="exam-banner" id="banner">
+  <span>🔒 পরীক্ষা চলছে — ট্যাব বা অ্যাপ পরিবর্তন করবেন না। কার্যকলাপ পর্যবেক্ষণ করা হচ্ছে।</span>
+  <span class="ctrl-time" id="warnCount">০ সতর্কতা</span>
+</div>
+
+<form method="post" enctype="multipart/form-data" action="{{ url_for('student.submit_exam', eid=exam._id) }}" id="examForm">
+
+{% if exam.type == 'mcq' %}
+  {% for q in exam.questions %}
+  <div class="card mb">
+    <div class="row" style="justify-content:space-between;">
+      <strong>প্রশ্ন {{ loop.index }}. {{ q.text }}</strong>
+      <span class="pill pill-gray">{{ q.marks }} নম্বর</span>
+    </div>
+    <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+      {% for opt in q.options %}
+      <label class="opt">
+        <input type="radio" name="q_{{ loop.index0 }}" value="{{ loop.index0 }}" required>
+        <span>{{ opt }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  {% for q in exam.questions %}
+  <div class="card mb">
+    <strong>প্রশ্ন {{ loop.index }}. {{ q.text }}</strong>
+    <div class="muted" style="font-size:13px;margin-top:4px;">কাগজে উত্তর লিখুন।</div>
+  </div>
+  {% endfor %}
+  <div class="card mb">
+    <div class="card-hd"><h3>আপনার উত্তরের ছবি আপলোড করুন</h3></div>
+    <p class="muted" style="font-size:13px;">হাতে লেখা উত্তরের এক বা একাধিক ছবি বেছে নিন। জমা দিলে একসাথে আপলোড হবে।</p>
+    <input type="file" name="answer_images" id="imgs" accept="image/*" multiple required>
+    <div class="img-preview" id="preview"></div>
+  </div>
+{% endif %}
+
+  <div class="row" style="justify-content:flex-end;gap:10px;">
+    <span class="muted" id="elapsed" style="font-size:13px;"></span>
+    <button type="submit" class="btn" id="submitBtn">পরীক্ষা জমা দিন</button>
+  </div>
+  <input type="hidden" name="_warns" id="warnsField" value="0">
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const EXAM_ID="{{ exam._id }}";
+const NAME="{{ current_user.doc.get('name') }}";
+let warns=0;
+const start=Date.now();
+setInterval(()=>{
+  const s=Math.floor((Date.now()-start)/1000);
+  document.getElementById('elapsed').textContent='অতিবাহিত '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+},1000);
+function flag(evt){
+  warns++; document.getElementById('warnCount').textContent=warns+' সতর্কতা';
+  document.getElementById('warnsField').value=warns;
+  document.getElementById('banner').classList.add('alarm');
+  setTimeout(()=>document.getElementById('banner').classList.remove('alarm'),1200);
+  if(window.eduSocket){ window.eduSocket.emit('exam_event', {exam_id:EXAM_ID, name:NAME, event:evt}); }
+}
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) flag('tab_switch'); });
+window.addEventListener('blur', ()=> flag('window_blur'));
+const imgs=document.getElementById('imgs');
+if(imgs){
+  imgs.addEventListener('change', ()=>{
+    const p=document.getElementById('preview'); p.innerHTML='';
+    [...imgs.files].forEach(f=>{ const u=URL.createObjectURL(f); const im=document.createElement('img'); im.src=u; p.appendChild(im); });
+  });
+}
+document.getElementById('examForm').addEventListener('submit', e=>{
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('submitBtn').textContent='জমা হচ্ছে…';
+});
+</script>
+{% endblock %}

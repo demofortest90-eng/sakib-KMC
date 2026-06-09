@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}ড্যাশবোর্ড{% endblock %}
+{% block heading %}ড্যাশবোর্ড{% endblock %}
+{% block topbar_extra %}
+<a class="icon-btn" href="{{ url_for('student.view_notifications') }}" title="নোটিফিকেশন" style="position:relative;">
+  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+  {% if unread %}<span class="notif-dot" id="notifDot">{{ unread }}</span>{% endif %}
+</a>
+{% endblock %}
+{% block content %}
+
+<div class="xp-card mb">
+  <div class="xp-meta">
+    <div>
+      <div style="font-size:13px;opacity:.85;">আবার স্বাগতম</div>
+      <h1 style="margin:2px 0 0;color:#fff;">{{ current_user.doc.get('name') }}</h1>
+      <div class="lvl-title">লেভেল {{ prog.level }} · {{ prog.title }}</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="streak-chip">🔥 {{ streak }} দিন স্ট্রিক</div>
+      <div style="margin-top:8px;font-size:13px;opacity:.9;">{{ prog.xp }} XP{% if not prog.max %} · পরের লেভেলে {{ prog.next_xp - prog.xp }} বাকি{% else %} · সর্বোচ্চ লেভেল{% endif %}</div>
+    </div>
+  </div>
+  <div class="xp-bar"><span style="width:{{ prog.pct }}%"></span></div>
+</div>
+
+<!-- Background study tracker widget -->
+<div class="study-widget mb" id="studyWidget">
+  <div>
+    <div style="font-size:13px;opacity:.9;"><span class="sw-dot" id="swDot"></span><span id="swState">পড়াশোনার সময় গণনা চলছে</span></div>
+    <div class="sw-timer" id="swTimer">0:00:00</div>
+    <div style="font-size:12px;opacity:.85;margin-top:2px;">এই সেশন · ট্যাব বদলালে নিজে থেকেই থেমে যাবে, ফিরে এলে আবার চলবে</div>
+  </div>
+  <div style="margin-left:auto;text-align:right;">
+    <div style="font-size:12px;opacity:.85;">মোট পড়াশোনা</div>
+    <div style="font-size:22px;font-weight:800;" id="swTotal">{{ study_total // 3600 }} ঘণ্টা {{ (study_total % 3600) // 60 }} মিনিট</div>
+  </div>
+</div>
+
+{% if courses|length > 1 %}
+<div class="card mb">
+  <div class="card-hd"><h3>আপনার কোর্সসমূহ</h3></div>
+  <div class="row" style="flex-wrap:wrap;">
+    {% for c in courses %}
+      <a class="pill {{ 'pill-blue' if active and c._id == active._id else 'pill-gray' }}" href="{{ url_for('student.choose_course', cid=c._id) }}" style="margin:3px;">{{ c.name }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="grid grid-4 mb">
+  <div class="stat"><div class="label">র‍্যাঙ্ক{% if active %} (কোর্সে){% endif %}</div><div class="value">{% if rank %}#{{ rank }}{% else %}—{% endif %}<small style="font-size:13px;color:var(--text-soft);"> / {{ total }}</small></div></div>
+  <div class="stat"><div class="label">মোট XP</div><div class="value">{{ prog.xp }}</div></div>
+  <div class="stat"><div class="label">ব্যাজ</div><div class="value">{{ badge_count }}</div></div>
+  <div class="stat"><div class="label">স্ট্রিক</div><div class="value">{{ streak }} দিন</div></div>
+</div>
+
+<div class="card mb">
+  <div class="card-hd"><h3>দ্রুত প্রবেশ</h3></div>
+  <div class="grid grid-3">
+    <a class="quick" href="{{ url_for('student.class_list') }}"><span class="quick-ic">▶</span><span>ক্লাস</span></a>
+    <a class="quick" href="{{ url_for('student.exam_list') }}"><span class="quick-ic">📝</span><span>পরীক্ষা</span></a>
+    <a class="quick" href="{{ url_for('student.demo_list') }}"><span class="quick-ic">🧪</span><span>ডেমনস্ট্রেশন</span></a>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-hd"><h3>আজকের মিশন</h3></div>
+    {% if missions %}
+      {% for m in missions %}
+      <div class="mission">
+        <div class="row" style="justify-content:space-between;">
+          <strong>{{ m.name }}</strong>
+          <span class="pill {{ 'pill-green' if m.completed else 'pill-amber' }}">{% if m.completed %}সম্পন্ন{% else %}+{{ m.reward_xp }} XP{% endif %}</span>
+        </div>
+        {% if m.description %}<div class="muted" style="font-size:13px;margin:3px 0 6px;">{{ m.description }}</div>{% endif %}
+        <div class="progress"><span style="width:{{ ((m.progress / m.target * 100) if m.target else 0)|round }}%"></span></div>
+        <div class="muted" style="font-size:12px;margin-top:4px;">{{ m.progress }} / {{ m.target }}</div>
+      </div>
+      {% endfor %}
+    {% else %}<div class="empty">এই মুহূর্তে কোনো মিশন নেই।</div>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><h3>লিডারবোর্ড</h3><a class="muted" style="font-size:13px;" href="{{ url_for('student.view_leaderboard') }}">সব দেখুন →</a></div>
+    {% if leaderboard %}
+      {% for r in leaderboard %}
+      <div class="lb-row {{ 'r'~r.rank if r.rank <= 3 else '' }} {{ 'me' if r.id == current_user.id else '' }}">
+        <div class="lb-rank">{{ r.rank }}</div>
+        <div class="lb-name">{{ r.name }}<div class="muted" style="font-size:12px;">লেভেল {{ r.level }}</div></div>
+        <div class="lb-xp">{{ r.xp }} XP</div>
+      </div>
+      {% endfor %}
+    {% else %}<div class="empty">এখনো কোনো তথ্য নেই।</div>{% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fmtH(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
+  return h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
+// seed lifetime from server value
+if (window.eduStudy) window.eduStudy.lifetime = {{ study_total }};
+window.onStudyTick = function(){
+  document.getElementById('swTimer').textContent = fmtH(window.eduStudy.session);
+  const hidden = document.hidden;
+  document.getElementById('studyWidget').classList.toggle('paused', hidden);
+  document.getElementById('swState').textContent = hidden ? 'থেমে আছে (অন্য ট্যাবে)' : 'পড়াশোনার সময় গণনা চলছে';
+};
+window.onStudySync = function(){
+  const t = window.eduStudy.lifetime;
+  document.getElementById('swTotal').textContent = Math.floor(t/3600)+' ঘণ্টা '+Math.floor((t%3600)/60)+' মিনিট';
+};
+document.addEventListener('visibilitychange', ()=>{ if(window.onStudyTick) window.onStudyTick(); });
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}লিডারবোর্ড{% endblock %}
+{% block heading %}লিডারবোর্ড{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>লিডারবোর্ড</h1><p>{% if my_rank %}আপনার অবস্থান <b>#{{ my_rank }}</b> / {{ total }}{% else %}র‍্যাঙ্কে উঠতে XP অর্জন করুন{% endif %}</p></div>
+  <div class="tabs">
+    <a class="{{ 'active' if scope=='course' else '' }}" href="{{ url_for('student.view_leaderboard', scope='course') }}">আমার কোর্স</a>
+    <a class="{{ 'active' if scope=='global' else '' }}" href="{{ url_for('student.view_leaderboard', scope='global') }}">সর্বমোট</a>
+  </div>
+</div>
+
+<div class="card">
+  {% if rows %}
+    {% for r in rows %}
+    <div class="lb-row {{ 'r'~r.rank if r.rank <= 3 else '' }} {{ 'me' if r.id == current_user.id else '' }}">
+      <div class="lb-rank">{% if r.rank == 1 %}🥇{% elif r.rank == 2 %}🥈{% elif r.rank == 3 %}🥉{% else %}{{ r.rank }}{% endif %}</div>
+      <div class="lb-avatar">{{ r.name[0]|upper }}</div>
+      <div class="lb-name">{{ r.name }}{% if r.id == current_user.id %} <span class="pill pill-blue">আপনি</span>{% endif %}
+        <div class="muted" style="font-size:12px;">লেভেল {{ r.level }} · 🔥 {{ r.streak }} · 🏅 {{ r.badges|length }}</div>
+      </div>
+      <div class="lb-xp">{{ r.xp }} XP</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty">এই লিডারবোর্ডে এখনো কোনো শিক্ষার্থী নেই।</div>
+  {% endif %}
+</div>
+{% endblock %}

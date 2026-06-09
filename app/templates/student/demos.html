@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}ডেমনস্ট্রেশন{% endblock %}
+{% block heading %}ডেমনস্ট্রেশন{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>ডেমনস্ট্রেশন</h1><p>যেসব ইন্টারঅ্যাকটিভ ডেমো আপনি দেখতে পারেন।</p></div></div>
+
+{% if demos %}
+<div class="grid grid-3">
+  {% for d in demos %}
+  <a class="card class-card" href="{{ url_for('student.view_demo', did=d._id) }}">
+    <div class="class-thumb">
+      {% if d.thumbnail_url %}<img src="{{ d.thumbnail_url }}" alt="{{ d.name }}" loading="lazy">
+      {% else %}<div class="thumb-fallback">🧪</div>{% endif %}
+      <span class="play-badge">↗</span>
+    </div>
+    <div style="padding:12px 14px;"><strong>{{ d.name }}</strong></div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card"><div class="empty">এই কোর্সে এখনো কোনো ডেমনস্ট্রেশন নেই।</div></div>
+{% endif %}
+{% endblock %}

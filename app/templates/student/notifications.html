@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}নোটিফিকেশন{% endblock %}
+{% block heading %}নোটিফিকেশন{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>নোটিফিকেশন</h1><p>ব্যাজ, লেভেল আপ, মিশন ও ফলাফলের খবর।</p></div></div>
+
+<div class="card">
+  {% if notes %}
+    {% for n in notes %}
+    <div class="notif-row">
+      <div class="notif-ic notif-{{ n.kind or 'info' }}">
+        {% if n.kind == 'badge' %}🏅{% elif n.kind == 'level' %}⭐{% elif n.kind == 'mission' %}🎯{% elif n.kind == 'admin' %}📢{% else %}🔔{% endif %}
+      </div>
+      <div style="flex:1;">
+        <div>{{ n.message }}</div>
+        <div class="muted" style="font-size:12px;">{{ n.created_at|dt }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty">এখনো কোনো নোটিফিকেশন নেই।</div>
+  {% endif %}
+</div>
+{% endblock %}
