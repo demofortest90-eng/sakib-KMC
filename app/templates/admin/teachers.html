@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}শিক্ষক{% endblock %}
+{% block heading %}শিক্ষক{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>শিক্ষক</h1><p>শিক্ষক একাউন্ট যোগ করুন এবং কোর্স নির্ধারণ করুন।</p></div></div>
+
+<div class="grid grid-2">
+  <div class="card" style="align-self:start;">
+    <div class="card-hd"><h3>শিক্ষক যোগ করুন</h3></div>
+    <form method="POST">
+      <div class="field"><label>পুরো নাম</label><input type="text" name="name" required></div>
+      <div class="field"><label>ইউজারনেম</label><input type="text" name="username" required></div>
+      <div class="field"><label>পাসওয়ার্ড</label><input type="text" name="password" required></div>
+      <div class="field"><label>কোর্স নির্ধারণ</label>
+        <div class="checks">
+          {% for c in courses %}<label class="check"><input type="checkbox" name="course_ids" value="{{ c._id }}">{{ c.name }}</label>{% else %}<span class="muted">এখনো কোনো কোর্স নেই।</span>{% endfor %}
+        </div>
+      </div>
+      <button class="btn btn-block">শিক্ষক যোগ করুন</button>
+    </form>
+  </div>
+
+  <div class="card" style="padding:6px;align-self:start;">
+    {% if teachers %}
+    <table>
+      <thead><tr><th>নাম</th><th>ইউজারনেম</th><th>কোর্স</th><th></th></tr></thead>
+      <tbody>
+        {% for t in teachers %}
+        <tr>
+          <td><b>{{ t.name }}</b></td>
+          <td class="muted">{{ t.username }}</td>
+          <td>{% for cn in t.course_names %}<span class="pill pill-gray">{{ cn }}</span> {% endfor %}</td>
+          <td><form method="POST" action="{{ url_for('admin.delete_teacher', tid=t._id) }}" onsubmit="return confirm('শিক্ষক মুছবেন?')"><button class="btn btn-danger btn-sm">মুছুন</button></form></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty">এখনো কোনো শিক্ষক যোগ করা হয়নি।</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

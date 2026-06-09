@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}জমাদান{% endblock %}
+{% block heading %}পরীক্ষার জমাদান{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ exam.title if exam }}</h1><p>{{ exam.type|upper if exam }} পরীক্ষার জমাদান।</p></div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.exam_overview') }}">ফিরে যান</a>
+</div>
+<div class="card" style="padding:6px;">
+  {% if subs %}
+  <table>
+    <thead><tr><th>শিক্ষার্থী</th><th>স্কোর</th><th>জমার সময়</th><th>উত্তর</th></tr></thead>
+    <tbody>
+      {% for s in subs %}
+      <tr>
+        <td><b>{{ s.student_name }}</b></td>
+        <td>{% if s.score_pct is not none %}{{ s.score }}/{{ s.total }} ({{ s.score_pct }}%){% else %}<span class="pill pill-blue">CQ</span>{% endif %}</td>
+        <td class="muted">{{ s.submitted_at|dt }}</td>
+        <td>
+          {% if s.image_urls %}
+            {% for u in s.image_urls %}<a href="{{ u }}" target="_blank" class="pill pill-gray">ছবি {{ loop.index }}</a> {% endfor %}
+          {% else %}<span class="muted">—</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<div class="empty">এখনো কোনো জমাদান নেই।</div>{% endif %}
+</div>
+{% endblock %}

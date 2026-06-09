@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}কার্যকলাপ লগ{% endblock %}
+{% block heading %}কার্যকলাপ লগ{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>কার্যকলাপ লগ</h1><p>অনুমতি, ট্যাব পরিবর্তন ও পরীক্ষার ঘটনা — লাইভ।</p></div>
+  <span class="tag-live">লাইভ</span>
+</div>
+
+<div class="card mb">
+  <div class="card-hd"><h3>রিয়েল-টাইম সতর্কতা</h3></div>
+  <div class="feed" id="liveFeed"><div class="muted" style="font-size:13px;">ঘটনার অপেক্ষায়…</div></div>
+</div>
+
+<div class="card" style="padding:6px;">
+  <table>
+    <thead><tr><th>শিক্ষার্থী</th><th>ঘটনা</th><th>বিস্তারিত</th><th>সময়</th></tr></thead>
+    <tbody>
+      {% for lg in logs %}
+      <tr>
+        <td><b>{{ lg.student_name }}</b></td>
+        <td>
+          {% set k = lg.kind %}
+          {% if 'deny' in k %}<span class="pill pill-red">{{ k.replace('_',' ') }}</span>
+          {% elif 'allow' in k %}<span class="pill pill-green">{{ k.replace('_',' ') }}</span>
+          {% elif 'hidden' in k or 'tab' in k %}<span class="pill pill-amber">{{ k.replace('_',' ') }}</span>
+          {% else %}<span class="pill pill-gray">{{ k.replace('_',' ') }}</span>{% endif %}
+        </td>
+        <td class="muted">{{ lg.detail }}</td>
+        <td class="muted">{{ lg.timestamp|dt }}</td>
+      </tr>
+      {% else %}<tr><td colspan="4"><div class="empty">এখনো কোনো লগ নেই।</div></td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const feed = document.getElementById('liveFeed');
+  if (window.eduSocket) {
+    window.eduSocket.on('admin_notification', d => {
+      const empty = feed.querySelector('.muted'); if (empty) empty.remove();
+      const el = document.createElement('div');
+      el.className = 'feed-item';
+      el.innerHTML = d.message + ' <span class="muted">· ' + new Date().toLocaleTimeString() + '</span>';
+      feed.prepend(el);
+    });
+  }
+</script>
+{% endblock %}

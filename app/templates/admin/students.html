@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}শিক্ষার্থী{% endblock %}
+{% block heading %}শিক্ষার্থী{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>শিক্ষার্থী</h1><p>শিক্ষার্থীর একাউন্ট অনুমোদন, বাতিল বা মুছে ফেলুন।</p></div></div>
+
+<div class="card" style="padding:6px;">
+  {% if students %}
+  <table>
+    <thead><tr><th>নাম</th><th>ইমেইল</th><th>কোর্স</th><th>XP</th><th>অবস্থা</th><th></th></tr></thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td><b>{{ s.name }}</b></td>
+        <td class="muted">{{ s.email }}</td>
+        <td>{% for cn in s.course_names %}<span class="pill pill-gray">{{ cn }}</span> {% endfor %}</td>
+        <td>{{ s.xp|default(0) }}</td>
+        <td>
+          {% if s.status == 'approved' %}<span class="pill pill-green">অনুমোদিত</span>
+          {% elif s.status == 'pending' %}<span class="pill pill-amber">অপেক্ষমান</span>
+          {% else %}<span class="pill pill-red">বাতিল</span>{% endif %}
+        </td>
+        <td>
+          <div class="row" style="gap:6px;">
+            {% if s.status != 'approved' %}
+            <form method="POST" action="{{ url_for('admin.student_action', sid=s._id, action='approve') }}"><button class="btn btn-success btn-sm">অনুমোদন</button></form>
+            {% endif %}
+            {% if s.status != 'rejected' %}
+            <form method="POST" action="{{ url_for('admin.student_action', sid=s._id, action='reject') }}"><button class="btn btn-ghost btn-sm">বাতিল</button></form>
+            {% endif %}
+            <form method="POST" action="{{ url_for('admin.student_action', sid=s._id, action='delete') }}" onsubmit="return confirm('শিক্ষার্থীটি মুছবেন?')"><button class="btn btn-danger btn-sm">মুছুন</button></form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<div class="empty">এখনো কোনো শিক্ষার্থী রেজিস্টার করেনি।</div>{% endif %}
+</div>
+{% endblock %}

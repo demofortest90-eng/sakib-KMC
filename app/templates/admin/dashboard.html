@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}অ্যাডমিন ড্যাশবোর্ড{% endblock %}
+{% block heading %}অ্যাডমিন ড্যাশবোর্ড{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>সারসংক্ষেপ</h1><p>সাকিব KMC-তে চলমান সবকিছু।</p></div></div>
+
+<div class="grid grid-4 mb">
+  <div class="stat"><div class="label">শিক্ষার্থী</div><div class="value">{{ stats.students }}</div></div>
+  <div class="stat"><div class="label">শিক্ষক</div><div class="value">{{ stats.teachers }}</div></div>
+  <div class="stat"><div class="label">কোর্স</div><div class="value">{{ stats.courses }}</div></div>
+  <div class="stat"><div class="label">অপেক্ষমান অনুমোদন</div><div class="value" style="color:var(--accent)">{{ stats.pending }}</div></div>
+  <div class="stat"><div class="label">ক্লাস</div><div class="value">{{ stats.classes }}</div></div>
+  <div class="stat"><div class="label">পরীক্ষা</div><div class="value">{{ stats.exams }}</div></div>
+</div>
+
+<div class="card mb">
+  <div class="card-hd"><h3>নোটিফিকেশন পাঠান</h3></div>
+  <p class="muted mb">সব শিক্ষার্থী বা নির্দিষ্ট কোর্সের শিক্ষার্থীদের কাছে বার্তা পাঠান। তারা সাথে সাথে নোটিফিকেশন পাবে।</p>
+  <form method="POST" action="{{ url_for('admin.send_notification') }}">
+    <div class="field"><label>বার্তা</label><textarea name="message" required placeholder="আপনার বার্তা লিখুন…"></textarea></div>
+    <div class="row" style="gap:10px;">
+      <select name="target" style="max-width:260px;">
+        <option value="all">সব শিক্ষার্থী</option>
+        {% for c in courses %}<option value="{{ c._id }}">{{ c.name }} এর শিক্ষার্থী</option>{% endfor %}
+      </select>
+      <button class="btn">পাঠান</button>
+    </div>
+  </form>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-hd"><h3>শীর্ষ শিক্ষার্থী</h3><a href="{{ url_for('admin.students') }}" class="muted" style="font-size:13px;">সব দেখুন</a></div>
+    {% if top %}
+      {% for s in top %}
+        <div class="lb-row">
+          <div class="lb-rank {{ 'r1' if loop.index==1 else 'r2' if loop.index==2 else 'r3' if loop.index==3 else '' }}">{{ loop.index }}</div>
+          <div class="lb-avatar">{{ s.name[0]|upper }}</div>
+          <div class="lb-name">{{ s.name }}<div class="muted" style="font-size:12px;">লেভেল {{ s.level }}</div></div>
+          <div class="lb-xp">{{ s.xp }} XP</div>
+        </div>
+      {% endfor %}
+    {% else %}<div class="empty">এখনো কোনো শিক্ষার্থী নেই।</div>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><h3>সাম্প্রতিক কার্যকলাপ</h3><a href="{{ url_for('admin.logs') }}" class="muted" style="font-size:13px;">সব লগ</a></div>
+    <div class="feed">
+      {% for lg in recent_logs %}
+        <div class="feed-item"><b>{{ lg.student_name }}</b> — {{ lg.kind.replace('_',' ') }} <span class="muted">· {{ lg.timestamp|dt }}</span></div>
+      {% else %}<div class="empty">এখনো কোনো কার্যকলাপ নেই।</div>{% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="card mt">
+  <div class="card-hd"><h3>রেজিস্ট্রেশন মোড</h3></div>
+  <p class="muted mb">ডিফল্ট আচরণ ঠিক করুন। প্রতিটি কোর্সের নিজস্ব মোড এটি ওভাররাইড করবে।</p>
+  <form method="POST" action="{{ url_for('admin.update_settings') }}" class="row">
+    <select name="default_mode" style="max-width:240px;">
+      <option value="free">ফ্রি (স্বয়ংক্রিয় অনুমোদন)</option>
+      <option value="paid">পেইড (অনুমোদন প্রয়োজন)</option>
+    </select>
+    <button class="btn">সংরক্ষণ</button>
+  </form>
+</div>
+{% endblock %}

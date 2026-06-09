@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}পরীক্ষা{% endblock %}
+{% block heading %}পরীক্ষা{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>সব পরীক্ষা</h1><p>সব কোর্সের পরীক্ষা ও জমাদানের তথ্য।</p></div></div>
+<div class="card" style="padding:6px;">
+  {% if exams %}
+  <table>
+    <thead><tr><th>শিরোনাম</th><th>কোর্স</th><th>ধরন</th><th>জমা</th><th></th></tr></thead>
+    <tbody>
+      {% for ex in exams %}
+      <tr>
+        <td><b>{{ ex.title }}</b></td>
+        <td class="muted">{{ ex.course_name }}</td>
+        <td><span class="pill pill-blue">{{ ex.type|upper }}</span></td>
+        <td>{{ ex.submission_count }}</td>
+        <td><a class="btn btn-ghost btn-sm" href="{{ url_for('admin.exam_submissions_view', eid=ex._id) }}">দেখুন</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<div class="empty">এখনো কোনো পরীক্ষা তৈরি হয়নি।</div>{% endif %}
+</div>
+{% endblock %}

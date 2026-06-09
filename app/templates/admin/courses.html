@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}কোর্স{% endblock %}
+{% block heading %}কোর্স{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>কোর্স</h1><p>কোর্স তৈরি করুন এবং ফ্রি/পেইড নির্ধারণ করুন।</p></div></div>
+
+<div class="grid grid-2">
+  <div class="card" style="align-self:start;">
+    <div class="card-hd"><h3>নতুন কোর্স</h3></div>
+    <form method="POST">
+      <div class="field"><label>কোর্সের নাম</label><input type="text" name="name" required></div>
+      <div class="field"><label>বিবরণ</label><textarea name="description"></textarea></div>
+      <div class="field"><label>প্রবেশ মোড</label>
+        <select name="mode"><option value="free">ফ্রি — স্বয়ংক্রিয় অনুমোদন</option><option value="paid">পেইড — অ্যাডমিন অনুমোদন</option></select>
+      </div>
+      <button class="btn btn-block">কোর্স তৈরি করুন</button>
+    </form>
+  </div>
+
+  <div>
+    {% if courses %}
+      {% for c in courses %}
+      <div class="card mb">
+        <div class="card-hd">
+          <div><h3>{{ c.name }}</h3><span class="pill {{ 'pill-amber' if c.mode=='paid' else 'pill-green' }}">{{ 'পেইড' if c.mode=='paid' else 'ফ্রি' }}</span></div>
+          <form method="POST" action="{{ url_for('admin.delete_course', cid=c._id) }}" onsubmit="return confirm('কোর্স মুছবেন?')"><button class="btn btn-danger btn-sm">মুছুন</button></form>
+        </div>
+        <p class="muted" style="font-size:14px;">{{ c.description or 'কোনো বিবরণ নেই।' }}</p>
+        <div class="row mt" style="justify-content:space-between;">
+          <div class="muted" style="font-size:13px;">{{ c.student_count }} জন শিক্ষার্থী · {{ c.teacher_names|length }} জন শিক্ষক</div>
+          <form method="POST" action="{{ url_for('admin.toggle_course_mode', cid=c._id) }}"><button class="btn btn-ghost btn-sm">{{ 'ফ্রি' if c.mode=='paid' else 'পেইড' }} করুন</button></form>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}<div class="card"><div class="empty">এখনো কোনো কোর্স নেই। বাঁ পাশে একটি তৈরি করুন।</div></div>{% endif %}
+  </div>
+</div>
+{% endblock %}
