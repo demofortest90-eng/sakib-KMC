@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}{{ code }} — {{ title }}{% endblock %}
+{% block body %}
+<div class="err-wrap">
+  <div class="err-box">
+    <div class="err-code">{{ code }}</div>
+    <h1>{{ title }}</h1>
+    <p class="muted">{{ message }}</p>
+    <a class="btn mt" href="{{ url_for('auth.login') }}">হোমে ফিরে যান</a>
+  </div>
+</div>
+{% endblock %}
