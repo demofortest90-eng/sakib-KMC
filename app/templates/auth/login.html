@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>লগইন — সাকিব KMC</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="https://i.ibb.co.com/Z61CQMsB/477551494-939461171735370-2337206942603778696-n.jpg">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-side">
+    <h1>শিখুন। প্রতিযোগিতা করুন।<br>এগিয়ে যান।</h1>
+    <p>একটি গেমিফাইড শিক্ষা প্ল্যাটফর্ম, যেখানে প্রতিটি ক্লাস, পরীক্ষা ও পড়াশোনার ঘণ্টা আপনাকে XP, ব্যাজ ও লিডারবোর্ডে জায়গা এনে দেয়।</p>
+    <div class="auth-feats">
+      <div class="auth-feat"><div class="fic">🎬</div><span>মনোযোগ-বান্ধব ভিডিও ক্লাস ও লাইভ নোট</span></div>
+      <div class="auth-feat"><div class="fic">🏆</div><span>রিয়েল-টাইম লিডারবোর্ডসহ লাইভ পরীক্ষা</span></div>
+      <div class="auth-feat"><div class="fic">🔥</div><span>প্রতিদিনের স্ট্রিক, মিশন ও ব্যাজ</span></div>
+    </div>
+  </div>
+
+  <div class="auth-form">
+    <div class="auth-box">
+      <div class="brand" style="padding-left:0;">
+        <div class="brand-logo"><img src="https://i.ibb.co.com/Z61CQMsB/477551494-939461171735370-2337206942603778696-n.jpg" alt="সাকিব KMC"></div>
+        <div class="brand-name">সাকিব KMC</div>
+      </div>
+      <h2>আবার স্বাগতম</h2>
+      <p class="auth-sub">যাত্রা চালিয়ে যেতে লগইন করুন।</p>
+
+      <div class="tabs">
+        <button class="active" data-tab="student" type="button">শিক্ষার্থী</button>
+        <button data-tab="teacher" type="button">শিক্ষক</button>
+        <button data-tab="admin" type="button">অ্যাডমিন</button>
+      </div>
+
+      <form method="POST" data-pane="student">
+        <input type="hidden" name="mode" value="student">
+        <div class="field"><label>ইমেইল</label><input type="email" name="email" required placeholder="you@example.com"></div>
+        <div class="field"><label>পাসওয়ার্ড</label><input type="password" name="password" required placeholder="••••••••"></div>
+        <button class="btn btn-block" type="submit">লগইন</button>
+        <p class="muted mt" style="text-align:center;font-size:14px;">নতুন? <a href="{{ url_for('auth.register') }}">একাউন্ট তৈরি করুন</a></p>
+      </form>
+
+      <form method="POST" data-pane="teacher" style="display:none;">
+        <input type="hidden" name="mode" value="teacher">
+        <div class="field"><label>ইউজারনেম</label><input type="text" name="username" placeholder="শিক্ষকের ইউজারনেম"></div>
+        <div class="field"><label>পাসওয়ার্ড</label><input type="password" name="password" placeholder="••••••••"></div>
+        <button class="btn btn-block" type="submit">শিক্ষক হিসেবে লগইন</button>
+        <p class="muted mt" style="text-align:center;font-size:13px;">শিক্ষক একাউন্ট অ্যাডমিন তৈরি করেন।</p>
+      </form>
+
+      <form method="POST" data-pane="admin" style="display:none;">
+        <input type="hidden" name="mode" value="admin">
+        <div class="field"><label>এক্সেস কোড</label><input type="password" name="access_code" placeholder="অ্যাডমিন এক্সেস কোড দিন"></div>
+        <button class="btn btn-block" type="submit">অ্যাডমিন প্যানেলে প্রবেশ</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="flashes">
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tabs button');
+  const panes = document.querySelectorAll('[data-pane]');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    panes.forEach(p => p.style.display = p.dataset.pane === t.dataset.tab ? 'block' : 'none');
+  }));
+  setTimeout(() => document.querySelectorAll('.flash').forEach(f => f.remove()), 4500);
+</script>
+</body>
+</html>
