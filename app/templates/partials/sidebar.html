@@ -1,0 +1,59 @@
+{% set role = current_user.doc.get('role') if current_user.is_authenticated else None %}
+{% set role_bn = {'admin':'অ্যাডমিন','teacher':'শিক্ষক','student':'শিক্ষার্থী'} %}
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo"><img src="https://i.ibb.co.com/Z61CQMsB/477551494-939461171735370-2337206942603778696-n.jpg" alt="সাকিব KMC"></div>
+    <div class="brand-name">সাকিব KMC<small>{{ role_bn.get(role, '') }}</small></div>
+  </div>
+
+  {% macro nav_link(endpoint, label, icon) %}
+    <a href="{{ url_for(endpoint) }}" class="{{ 'active' if request.endpoint == endpoint else '' }}">
+      {{ icon|safe }}<span>{{ label }}</span>
+    </a>
+  {% endmacro %}
+
+  {% set ic_dash = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>' %}
+  {% set ic_users = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>' %}
+  {% set ic_book = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>' %}
+  {% set ic_play = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>' %}
+  {% set ic_exam = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>' %}
+  {% set ic_flask = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 002 3h10a2 2 0 002-3l-5-9V3"/></svg>' %}
+  {% set ic_trophy = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4a2 2 0 01-2-2V5h4M18 9h2a2 2 0 002-2V5h-4M6 4h12v6a6 6 0 01-12 0V4zM9 20h6M12 16v4"/></svg>' %}
+  {% set ic_target = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>' %}
+  {% set ic_user = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>' %}
+  {% set ic_logs = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' %}
+  {% set ic_logout = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' %}
+
+  <nav class="nav">
+    {% if role == 'admin' %}
+      {{ nav_link('admin.dashboard', 'ড্যাশবোর্ড', ic_dash) }}
+      {{ nav_link('admin.students', 'শিক্ষার্থী', ic_users) }}
+      {{ nav_link('admin.manage_courses', 'কোর্স', ic_book) }}
+      {{ nav_link('admin.manage_teachers', 'শিক্ষক', ic_user) }}
+      {{ nav_link('admin.exam_overview', 'পরীক্ষা', ic_exam) }}
+      {{ nav_link('admin.logs', 'কার্যকলাপ লগ', ic_logs) }}
+    {% elif role == 'teacher' %}
+      {{ nav_link('teacher.dashboard', 'ড্যাশবোর্ড', ic_dash) }}
+      {{ nav_link('teacher.manage_classes', 'ক্লাস', ic_play) }}
+      {{ nav_link('teacher.manage_exams', 'পরীক্ষা', ic_exam) }}
+      {{ nav_link('teacher.manage_demos', 'ডেমনস্ট্রেশন', ic_flask) }}
+      {{ nav_link('teacher.manage_missions', 'মিশন', ic_target) }}
+    {% elif role == 'student' %}
+      {{ nav_link('student.dashboard', 'ড্যাশবোর্ড', ic_dash) }}
+      {{ nav_link('student.class_list', 'ক্লাস', ic_play) }}
+      {{ nav_link('student.exam_list', 'পরীক্ষা', ic_exam) }}
+      {{ nav_link('student.demo_list', 'ডেমনস্ট্রেশন', ic_flask) }}
+      <div class="nav-label">অগ্রগতি</div>
+      {{ nav_link('student.view_leaderboard', 'লিডারবোর্ড', ic_trophy) }}
+      {{ nav_link('student.profile', 'আমার প্রোফাইল', ic_user) }}
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <div style="padding:6px 13px 10px;">
+      <div style="font-weight:600;font-size:14px;">{{ current_user.doc.get('name','ব্যবহারকারী') }}</div>
+      <div class="muted" style="font-size:12px;">{{ current_user.doc.get('email') or current_user.doc.get('username','') }}</div>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" class="logout-link">{{ ic_logout|safe }}<span>লগআউট</span></a>
+  </div>
+</aside>
