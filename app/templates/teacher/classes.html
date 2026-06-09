@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}ক্লাস{% endblock %}
+{% block heading %}ক্লাস{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>ক্লাস</h1><p>ইউটিউব (আনলিস্টেড) লিংক থেকে ক্লাস যোগ করুন।</p></div></div>
+
+<div class="grid grid-2">
+  <div class="card" style="align-self:start;">
+    <div class="card-hd"><h3>নতুন ক্লাস</h3></div>
+    {% if courses %}
+    <form method="POST">
+      <div class="field"><label>ক্লাসের নাম</label><input type="text" name="name" required></div>
+      <div class="field"><label>ইউটিউব লিংক (বা ভিডিও আইডি)</label><input type="text" name="youtube_link" required placeholder="https://youtu.be/..."></div>
+      <div class="field"><label>কোর্স</label><select name="course_id" required>{% for c in courses %}<option value="{{ c._id }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label>বিবরণ</label><textarea name="description"></textarea></div>
+      <label class="check" style="width:fit-content;"><input type="checkbox" name="is_live"> লাইভ ক্লাস হিসেবে চিহ্নিত করুন (মনিটরিং চালু)</label>
+      <button class="btn btn-block mt">ক্লাস যোগ করুন</button>
+    </form>
+    {% else %}<div class="empty">আপনাকে এখনো কোনো কোর্সে যুক্ত করা হয়নি।</div>{% endif %}
+  </div>
+
+  <div>
+    {% for cl in classes %}
+    <div class="card mb">
+      <div class="card-hd">
+        <div><h3>{{ cl.name }}</h3><span class="pill pill-gray">{{ cl.course_name }}</span> {% if cl.is_live %}<span class="tag-live">লাইভ</span>{% endif %}</div>
+      </div>
+      <p class="muted" style="font-size:14px;">{{ cl.description or 'কোনো বিবরণ নেই।' }}</p>
+      {% if cl.is_live %}<a class="btn btn-ghost btn-sm mt" href="{{ url_for('teacher.live_monitor', cid=cl._id) }}">লাইভ মনিটর খুলুন</a>{% endif %}
+    </div>
+    {% else %}<div class="card"><div class="empty">এখনো কোনো ক্লাস যোগ করা হয়নি।</div></div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

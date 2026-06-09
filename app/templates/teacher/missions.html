@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}মিশন{% endblock %}
+{% block heading %}মিশন{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>মিশন</h1><p>লক্ষ্য নির্ধারণ করুন যা পূরণ করলে শিক্ষার্থীরা XP পাবে।</p></div></div>
+
+<div class="grid grid-2">
+  <div class="card" style="align-self:start;">
+    <div class="card-hd"><h3>নতুন মিশন</h3></div>
+    {% if courses %}
+    <form method="POST">
+      <div class="field"><label>নাম</label><input type="text" name="name" required></div>
+      <div class="field"><label>বিবরণ</label><textarea name="description"></textarea></div>
+      <div class="field"><label>কোর্স</label><select name="course_id" required>{% for c in courses %}<option value="{{ c._id }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="grid grid-2">
+        <div class="field"><label>ধরন</label><select name="type">
+          <option value="class_watch">ক্লাস দেখা</option>
+          <option value="exam_pass">পরীক্ষায় পাস</option>
+          <option value="study_time">পড়াশোনার সময় (সেকেন্ড)</option>
+          <option value="streak">লগইন স্ট্রিক</option>
+          <option value="custom">কাস্টম</option>
+        </select></div>
+        <div class="field"><label>লক্ষ্যমাত্রা</label><input type="number" name="target" value="3" min="1"></div>
+      </div>
+      <div class="field"><label>পুরস্কার XP</label><input type="number" name="reward_xp" value="100" min="0"></div>
+      <button class="btn btn-block mt">মিশন তৈরি করুন</button>
+    </form>
+    {% else %}<div class="empty">আপনাকে এখনো কোনো কোর্সে যুক্ত করা হয়নি।</div>{% endif %}
+  </div>
+
+  <div>
+    {% for m in missions %}
+    <div class="card mb">
+      <div class="row" style="justify-content:space-between;">
+        <strong>{{ m.name }}</strong>
+        <span class="pill pill-amber">+{{ m.reward_xp }} XP</span>
+      </div>
+      {% if m.description %}<div class="muted" style="font-size:13px;margin-top:4px;">{{ m.description }}</div>{% endif %}
+      <div class="row" style="margin-top:8px;gap:6px;">
+        <span class="pill pill-gray">{{ m.type|replace('_',' ') }}</span>
+        <span class="pill pill-blue">লক্ষ্য: {{ m.target }}</span>
+      </div>
+    </div>
+    {% else %}<div class="card"><div class="empty">এখনো কোনো মিশন তৈরি হয়নি।</div></div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

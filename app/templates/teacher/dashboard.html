@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}শিক্ষক ড্যাশবোর্ড{% endblock %}
+{% block heading %}শিক্ষক ড্যাশবোর্ড{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>স্বাগতম, {{ current_user.doc.get('name') }}</h1><p>আপনার ক্লাস, পরীক্ষা ও ডেমনস্ট্রেশন পরিচালনা করুন।</p></div></div>
+
+<div class="grid grid-4 mb">
+  <div class="stat"><div class="label">আমার কোর্স</div><div class="value">{{ stats.courses }}</div></div>
+  <div class="stat"><div class="label">ক্লাস</div><div class="value">{{ stats.classes }}</div></div>
+  <div class="stat"><div class="label">পরীক্ষা</div><div class="value">{{ stats.exams }}</div></div>
+  <div class="stat"><div class="label">ডেমনস্ট্রেশন</div><div class="value">{{ stats.demos }}</div></div>
+</div>
+
+<div class="card mb">
+  <div class="card-hd"><h3>দ্রুত কাজ</h3></div>
+  <div class="row" style="flex-wrap:wrap;">
+    <a class="btn" href="{{ url_for('teacher.manage_classes') }}">+ ক্লাস যোগ</a>
+    <a class="btn" href="{{ url_for('teacher.manage_exams') }}">+ পরীক্ষা তৈরি</a>
+    <a class="btn btn-ghost" href="{{ url_for('teacher.manage_demos') }}">+ ডেমনস্ট্রেশন</a>
+    <a class="btn btn-ghost" href="{{ url_for('teacher.manage_missions') }}">+ নতুন মিশন</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hd"><h3>আমার কোর্স</h3></div>
+  {% if courses %}
+    {% for c in courses %}<span class="pill pill-blue" style="margin:3px;">{{ c.name }}</span>{% endfor %}
+  {% else %}<div class="empty">আপনাকে এখনো কোনো কোর্সে যুক্ত করা হয়নি। অ্যাডমিনকে বলুন।</div>{% endif %}
+</div>
+
+<div class="card mt">
+  <div class="card-hd"><h3>লাইভ পরীক্ষার সতর্কতা</h3><span class="tag-live">লাইভ</span></div>
+  <div class="feed" id="examFeed"><div class="muted" style="font-size:13px;">জমাদান ও সতর্কতা এখানে রিয়েল-টাইমে দেখা যাবে…</div></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const f = document.getElementById('examFeed');
+  function add(msg){ const e=f.querySelector('.muted'); if(e)e.remove(); const d=document.createElement('div'); d.className='feed-item'; d.innerHTML=msg+' <span class="muted">· '+new Date().toLocaleTimeString()+'</span>'; f.prepend(d); }
+  if(window.eduSocket){
+    window.eduSocket.on('exam_submit', d => add('<b>'+d.student+'</b> জমা দিয়েছে '+d.exam));
+    window.eduSocket.on('exam_alert', d => add('⚠️ <b>'+d.student+'</b> — '+d.event));
+  }
+</script>
+{% endblock %}

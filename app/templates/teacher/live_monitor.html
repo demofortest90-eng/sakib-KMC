@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}লাইভ মনিটর{% endblock %}
+{% block heading %}লাইভ মনিটর{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ cls.name if cls else 'ক্লাস' }} — লাইভ</h1><p>কে উপস্থিত আর কে অন্য ট্যাবে গেছে রিয়েল-টাইমে দেখুন। ক্যামেরা লাগবে না।</p></div>
+  <span class="tag-live">লাইভ</span>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-hd"><h3>শিক্ষার্থী <span class="muted" id="count">(০ জন উপস্থিত)</span></h3></div>
+    <div class="monitor-grid" id="grid">
+      <div class="empty" id="noStudents">শিক্ষার্থীদের যোগ দেওয়ার অপেক্ষায়…</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><h3>কার্যকলাপ ফিড</h3></div>
+    <div class="feed" id="feed"><div class="muted" style="font-size:13px;">যোগ/প্রস্থান ও ট্যাব পরিবর্তনের ঘটনা এখানে দেখা যাবে…</div></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const CLASS_ID="{{ cls._id if cls else '' }}";
+const grid=document.getElementById('grid'), feed=document.getElementById('feed');
+const students={};
+function render(){
+  const ns=document.getElementById('noStudents'); if(ns) ns.remove();
+  grid.innerHTML='';
+  const ids=Object.keys(students);
+  if(!ids.length){ grid.innerHTML='<div class="empty">কোনো শিক্ষার্থী উপস্থিত নেই।</div>'; }
+  let present=0;
+  ids.forEach(id=>{
+    const s=students[id]; if(!s.away) present++;
+    const c=document.createElement('div'); c.className='mon-card';
+    c.innerHTML='<span class="mon-dot '+(s.away?'away':'')+'"></span>'+
+      '<div><strong>'+s.name+'</strong><div class="muted" style="font-size:12px;">'+
+      (s.away?'অন্য ট্যাবে':'উপস্থিত')+(s.granted===false?' · অনুমতি দেয়নি':'')+'</div></div>';
+    grid.appendChild(c);
+  });
+  document.getElementById('count').textContent='('+present+' জন উপস্থিত)';
+}
+function log(msg){
+  const e=feed.querySelector('.muted'); if(e&&feed.children.length===1) e.remove();
+  const d=document.createElement('div'); d.className='feed-item';
+  d.innerHTML=msg+' <span class="muted">· '+new Date().toLocaleTimeString()+'</span>';
+  feed.prepend(d);
+}
+if(window.eduSocket){
+  const s=window.eduSocket;
+  s.emit('monitor_class', {class_id:CLASS_ID});
+  s.on('student_joined', d=>{ students[d.sid]={name:d.name, away:false, granted:d.granted};
+    render(); log('<b>'+d.name+'</b> যোগ দিয়েছে'); });
+  s.on('student_left', d=>{ if(students[d.sid]){ log('<b>'+students[d.sid].name+'</b> চলে গেছে'); delete students[d.sid]; render(); } });
+  s.on('student_tab_hidden', d=>{ if(students[d.sid]){ students[d.sid].away=true; render(); log('⚠️ <b>'+d.name+'</b> অন্য ট্যাবে গেছে'); } });
+  s.on('student_tab_visible', d=>{ if(students[d.sid]){ students[d.sid].away=false; render(); log('<b>'+d.name+'</b> ফিরে এসেছে'); } });
+  s.on('permission_status', d=>{ if(students[d.sid]){ students[d.sid].granted=d.granted; render(); }
+    log('<b>'+d.name+'</b> অনুমতি '+(d.granted?'দিয়েছে':'দেয়নি')); });
+}
+</script>
+{% endblock %}

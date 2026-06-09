@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}পরীক্ষা{% endblock %}
+{% block heading %}পরীক্ষা{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>পরীক্ষা</h1><p>শুরু ও শেষের সময় দিয়ে লাইভ MCQ বা CQ পরীক্ষা তৈরি করুন।</p></div></div>
+
+<div class="grid grid-2">
+  <div class="card" style="align-self:start;">
+    <div class="card-hd"><h3>নতুন পরীক্ষা</h3></div>
+    {% if courses %}
+    <form method="POST" id="examForm">
+      <div class="field"><label>শিরোনাম</label><input type="text" name="title" required></div>
+      <div class="grid grid-2">
+        <div class="field"><label>কোর্স</label><select name="course_id" required>{% for c in courses %}<option value="{{ c._id }}">{{ c.name }}</option>{% endfor %}</select></div>
+        <div class="field"><label>ধরন</label><select name="type" id="type"><option value="mcq">MCQ (স্বয়ংক্রিয় মূল্যায়ন)</option><option value="cq">CQ (ছবি আপলোড)</option></select></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>শুরুর সময়</label><input type="datetime-local" name="start_time"></div>
+        <div class="field"><label>শেষের সময়</label><input type="datetime-local" name="end_time"></div>
+      </div>
+
+      <div id="mcqBox">
+        <div class="card-hd"><h3>প্রশ্ন</h3><button type="button" class="btn btn-sm btn-ghost" id="addQ">+ প্রশ্ন যোগ</button></div>
+        <div id="qList"></div>
+      </div>
+
+      <div id="cqBox" style="display:none;">
+        <div class="card-hd"><h3>CQ প্রশ্ন</h3><button type="button" class="btn btn-sm btn-ghost" id="addCQ">+ প্রশ্ন যোগ</button></div>
+        <div id="cqList"></div>
+      </div>
+
+      <button class="btn btn-block mt">পরীক্ষা তৈরি করুন</button>
+    </form>
+    {% else %}<div class="empty">আপনাকে এখনো কোনো কোর্সে যুক্ত করা হয়নি।</div>{% endif %}
+  </div>
+
+  <div>
+    {% for ex in exams %}
+    <div class="card mb">
+      <div class="card-hd">
+        <div><h3>{{ ex.title }}</h3>
+          <span class="pill {{ 'pill-blue' if ex.type=='mcq' else 'pill-amber' }}">{{ ex.type|upper }}</span>
+          <span class="pill pill-gray">{{ ex.course_name }}</span>
+        </div>
+      </div>
+      <div class="muted" style="font-size:13px;">{{ ex.questions|length }} টি প্রশ্ন · {{ ex.submission_count }} টি জমা</div>
+      <a class="btn btn-ghost btn-sm mt" href="{{ url_for('teacher.exam_results', eid=ex._id) }}">ফলাফল ও কার্যকলাপ দেখুন</a>
+    </div>
+    {% else %}<div class="card"><div class="empty">এখনো কোনো পরীক্ষা তৈরি হয়নি।</div></div>{% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const typeSel=document.getElementById('type');
+const mcqBox=document.getElementById('mcqBox'), cqBox=document.getElementById('cqBox');
+typeSel.addEventListener('change', ()=>{
+  const mcq=typeSel.value==='mcq';
+  mcqBox.style.display=mcq?'':'none'; cqBox.style.display=mcq?'none':'';
+});
+let qi=0;
+document.getElementById('addQ').addEventListener('click', ()=>{
+  const d=document.createElement('div'); d.className='qblock';
+  d.innerHTML=
+   '<div class="field"><label>প্রশ্ন '+(qi+1)+'</label><input type="text" name="q_text" required></div>'+
+   '<div class="grid grid-2">'+
+     '<input type="text" name="q_opt_a" placeholder="অপশন ক" required>'+
+     '<input type="text" name="q_opt_b" placeholder="অপশন খ" required>'+
+     '<input type="text" name="q_opt_c" placeholder="অপশন গ" required>'+
+     '<input type="text" name="q_opt_d" placeholder="অপশন ঘ" required>'+
+   '</div>'+
+   '<div class="grid grid-2"><div class="field"><label>সঠিক উত্তর</label>'+
+     '<select name="q_correct"><option value="0">ক</option><option value="1">খ</option><option value="2">গ</option><option value="3">ঘ</option></select></div>'+
+     '<div class="field"><label>নম্বর</label><input type="number" name="q_marks" value="1" min="1"></div></div>';
+  document.getElementById('qList').appendChild(d); qi++;
+});
+let ci=0;
+document.getElementById('addCQ').addEventListener('click', ()=>{
+  const d=document.createElement('div'); d.className='field';
+  d.innerHTML='<label>CQ প্রশ্ন '+(ci+1)+'</label><textarea name="cq_text" required></textarea>';
+  document.getElementById('cqList').appendChild(d); ci++;
+});
+document.getElementById('addQ').click();
+</script>
+{% endblock %}

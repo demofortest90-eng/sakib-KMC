@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}ডেমনস্ট্রেশন{% endblock %}
+{% block heading %}ডেমনস্ট্রেশন{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>ডেমনস্ট্রেশন</h1><p>থাম্বনেইলসহ একটি ইন্টারঅ্যাকটিভ HTML ডেমো আপলোড করুন।</p></div></div>
+
+<div class="grid grid-2">
+  <div class="card" style="align-self:start;">
+    <div class="card-hd"><h3>নতুন ডেমনস্ট্রেশন</h3></div>
+    {% if courses %}
+    <form method="POST" enctype="multipart/form-data">
+      <div class="field"><label>নাম</label><input type="text" name="name" required></div>
+      <div class="field"><label>কোর্স</label><select name="course_id" required>{% for c in courses %}<option value="{{ c._id }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label>থাম্বনেইল ছবি</label><input type="file" name="thumbnail" accept="image/*"></div>
+      <div class="field"><label>HTML ফাইল</label><input type="file" name="html_file" accept=".html,.htm" required></div>
+      <button class="btn btn-block mt">ডেমনস্ট্রেশন যোগ করুন</button>
+    </form>
+    {% else %}<div class="empty">আপনাকে এখনো কোনো কোর্সে যুক্ত করা হয়নি।</div>{% endif %}
+  </div>
+
+  <div>
+    {% for d in demos %}
+    <div class="card mb">
+      <div class="row" style="gap:14px;">
+        {% if d.thumbnail_url %}<img src="{{ d.thumbnail_url }}" alt="{{ d.name }}" style="width:84px;height:60px;object-fit:cover;border-radius:8px;">{% else %}<div class="thumb-fallback" style="width:84px;height:60px;">🧪</div>{% endif %}
+        <div><strong>{{ d.name }}</strong><div class="muted" style="font-size:12px;">যোগ হয়েছে {{ d.created_at|dt }}</div></div>
+      </div>
+    </div>
+    {% else %}<div class="card"><div class="empty">এখনো কোনো ডেমনস্ট্রেশন যোগ করা হয়নি।</div></div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

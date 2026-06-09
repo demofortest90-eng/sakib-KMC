@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}পরীক্ষার ফলাফল{% endblock %}
+{% block heading %}পরীক্ষার ফলাফল{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ exam.title if exam else 'ফলাফল' }}</h1><p>{{ exam.type|upper if exam else '' }} · {{ subs|length }} টি জমা</p></div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('teacher.manage_exams') }}">← পরীক্ষা</a>
+</div>
+
+{% if subs %}
+<div class="card">
+  <table>
+    <thead><tr>
+      <th>র‍্যাঙ্ক</th><th>শিক্ষার্থী</th>
+      {% if exam and exam.type == 'mcq' %}<th>স্কোর</th><th>%</th>{% else %}<th>উত্তর</th>{% endif %}
+      <th>জমার সময়</th><th>সতর্কতা</th>
+    </tr></thead>
+    <tbody>
+      {% for s in subs %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ s.student_name }}</td>
+        {% if exam and exam.type == 'mcq' %}
+          <td>{{ s.score }}/{{ s.total }}</td>
+          <td><span class="pill {{ 'pill-green' if (s.score_pct or 0) >= 50 else 'pill-red' }}">{{ s.score_pct }}%</span></td>
+        {% else %}
+          <td>
+            {% for u in s.image_urls %}<a href="{{ u }}" target="_blank" class="img-chip">ছবি {{ loop.index }}</a>{% endfor %}
+            {% if not s.image_urls %}<span class="muted">নেই</span>{% endif %}
+          </td>
+        {% endif %}
+        <td class="muted">{{ s.submitted_at|dt }}</td>
+        <td>{% if s.events %}<span class="pill pill-red">{{ s.events|length }} টি সতর্কতা</span>{% else %}<span class="pill pill-green">পরিষ্কার</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card"><div class="empty">এখনো কোনো জমা নেই।</div></div>
+{% endif %}
+{% endblock %}
