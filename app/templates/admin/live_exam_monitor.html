@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}লাইভ মনিটর{% endblock %}
+{% block heading %}লাইভ পরীক্ষা মনিটর{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><span class="eyebrow">{{ exam.type|upper if exam }} পরীক্ষা</span><h1>{{ exam.title if exam else 'পরীক্ষা' }} — লাইভ</h1><p>কোন শিক্ষার্থী পরীক্ষা দিচ্ছে এবং কে ট্যাব বদলাচ্ছে রিয়েল-টাইমে দেখুন।</p></div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('admin.live_exams') }}">← লাইভ পরীক্ষা</a>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-hd"><h3>পরীক্ষারত শিক্ষার্থী <span class="muted" id="count">(০ জন)</span></h3></div>
+    <div class="monitor-grid" id="grid"><div class="empty" id="noStudents">শিক্ষার্থীদের অপেক্ষায়…</div></div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><h3>সন্দেহজনক কার্যকলাপ</h3></div>
+    <div class="feed" id="feed"><div class="muted" style="font-size:13px;">ট্যাব পরিবর্তন বা অন্য সন্দেহজনক ঘটনা এখানে দেখা যাবে…</div></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const EXAM_ID="{{ exam._id if exam else '' }}";
+const grid=document.getElementById('grid'), feed=document.getElementById('feed');
+const students={};
+function render(){
+  const ns=document.getElementById('noStudents'); if(ns) ns.remove();
+  grid.innerHTML='';
+  const ids=Object.keys(students);
+  if(!ids.length){ grid.innerHTML='<div class="empty">কেউ পরীক্ষা দিচ্ছে না।</div>'; }
+  ids.forEach(id=>{
+    const s=students[id];
+    const c=document.createElement('div'); c.className='mon-card';
+    c.innerHTML='<span class="mon-dot '+(s.flags?'away':'')+'"></span>'+
+      '<div><strong>'+s.name+'</strong><div class="muted" style="font-size:12px;">'+
+      (s.flags? (s.flags+' টি সতর্কতা') :'স্বাভাবিক')+'</div></div>';
+    grid.appendChild(c);
+  });
+  document.getElementById('count').textContent='('+ids.length+' জন)';
+}
+function log(msg){
+  const e=feed.querySelector('.muted'); if(e&&feed.children.length===1) e.remove();
+  const d=document.createElement('div'); d.className='feed-item';
+  d.innerHTML=msg+' <span class="muted">· '+new Date().toLocaleTimeString()+'</span>';
+  feed.prepend(d);
+}
+if(window.eduSocket){
+  const s=window.eduSocket;
+  s.emit('monitor_exam', {exam_id:EXAM_ID});
+  s.on('exam_student_joined', d=>{ if(!students[d.sid]) students[d.sid]={name:d.name, flags:0}; render(); log('<b>'+d.name+'</b> পরীক্ষা শুরু করেছে'); });
+  s.on('exam_student_left', d=>{ if(students[d.sid]){ delete students[d.sid]; render(); } });
+  s.on('exam_alert', d=>{ if(students[d.sid]) students[d.sid].flags=(students[d.sid].flags||0)+1; render(); log('⚠️ <b>'+(d.name||d.student)+'</b> — '+d.event); });
+}
+</script>
+{% endblock %}

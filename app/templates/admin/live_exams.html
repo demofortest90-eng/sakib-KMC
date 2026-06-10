@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}লাইভ পরীক্ষা{% endblock %}
+{% block heading %}লাইভ পরীক্ষা{% endblock %}
+{% block content %}
+<div class="page-head"><div><span class="eyebrow">রিয়েল-টাইম মনিটরিং</span><h1>লাইভ পরীক্ষা</h1><p>এই মুহূর্তে যেসব পরীক্ষা চলছে — শিক্ষার্থীদের উপস্থিতি ও সন্দেহজনক কার্যকলাপ দেখুন।</p></div>
+  <span class="tag-live">লাইভ</span>
+</div>
+
+{% if exams %}
+<div class="grid grid-2">
+  {% for ex in exams %}
+  <div class="card">
+    <div class="card-hd">
+      <div><h3>{{ ex.title }}</h3>
+        <span class="pill {{ 'pill-blue' if ex.type=='mcq' else 'pill-amber' }}">{{ ex.type|upper }}</span>
+        <span class="pill pill-gray">{{ ex.course_name }}</span>
+        <span class="pill pill-green">● লাইভ</span>
+      </div>
+    </div>
+    <div class="muted" style="font-size:13px;">{{ ex.questions|length }} টি প্রশ্ন · {{ ex.submission_count }} টি জমা</div>
+    <a class="btn btn-sm mt" href="{{ url_for('admin.live_exam_monitor', eid=ex._id) }}">লাইভ মনিটর খুলুন →</a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card"><div class="empty">এই মুহূর্তে কোনো পরীক্ষা লাইভ নেই। শিক্ষক লাইভ করলে এখানে দেখা যাবে।</div></div>
+{% endif %}
+{% endblock %}
