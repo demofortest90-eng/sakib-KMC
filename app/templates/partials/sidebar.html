@@ -2,8 +2,8 @@
 {% set role_bn = {'admin':'অ্যাডমিন','teacher':'শিক্ষক','student':'শিক্ষার্থী'} %}
 <aside class="sidebar">
   <div class="brand">
-    <div class="brand-logo"><img src="https://i.ibb.co.com/Z61CQMsB/477551494-939461171735370-2337206942603778696-n.jpg" alt="সাকিব KMC"></div>
-    <div class="brand-name">সাকিব KMC<small>{{ role_bn.get(role, '') }}</small></div>
+    <div class="brand-logo"><img src="https://i.ibb.co.com/SC499cD/5e250eaf-c9df-415b-876d-88088ed1af45-removebg-preview.png" alt="জ্ঞানজয়"></div>
+    <div class="brand-name">জ্ঞানজয়<small>{{ role_bn.get(role, '') }}</small></div>
   </div>
 
   {% macro nav_link(endpoint, label, icon) %}
@@ -31,6 +31,7 @@
       {{ nav_link('admin.manage_courses', 'কোর্স', ic_book) }}
       {{ nav_link('admin.manage_teachers', 'শিক্ষক', ic_user) }}
       {{ nav_link('admin.exam_overview', 'পরীক্ষা', ic_exam) }}
+      {{ nav_link('admin.live_exams', 'লাইভ পরীক্ষা', ic_target) }}
       {{ nav_link('admin.logs', 'কার্যকলাপ লগ', ic_logs) }}
     {% elif role == 'teacher' %}
       {{ nav_link('teacher.dashboard', 'ড্যাশবোর্ড', ic_dash) }}
