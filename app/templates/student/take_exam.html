@@ -55,6 +55,8 @@ const EXAM_ID="{{ exam._id }}";
 const NAME="{{ current_user.doc.get('name') }}";
 let warns=0;
 const start=Date.now();
+if(window.eduSocket){ window.eduSocket.emit('exam_join', {exam_id:EXAM_ID, name:NAME}); }
+window.addEventListener('beforeunload', ()=>{ if(window.eduSocket) window.eduSocket.emit('exam_leave', {exam_id:EXAM_ID}); });
 setInterval(()=>{
   const s=Math.floor((Date.now()-start)/1000);
   document.getElementById('elapsed').textContent='অতিবাহিত '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
@@ -76,6 +78,7 @@ if(imgs){
   });
 }
 document.getElementById('examForm').addEventListener('submit', e=>{
+  if(window.eduSocket) window.eduSocket.emit('exam_leave', {exam_id:EXAM_ID});
   document.getElementById('submitBtn').disabled=true;
   document.getElementById('submitBtn').textContent='জমা হচ্ছে…';
 });
