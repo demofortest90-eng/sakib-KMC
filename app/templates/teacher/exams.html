@@ -41,10 +41,16 @@
         <div><h3>{{ ex.title }}</h3>
           <span class="pill {{ 'pill-blue' if ex.type=='mcq' else 'pill-amber' }}">{{ ex.type|upper }}</span>
           <span class="pill pill-gray">{{ ex.course_name }}</span>
+          {% if ex.is_live %}<span class="pill pill-green">● লাইভ</span>{% else %}<span class="pill pill-red">বন্ধ</span>{% endif %}
         </div>
       </div>
       <div class="muted" style="font-size:13px;">{{ ex.questions|length }} টি প্রশ্ন · {{ ex.submission_count }} টি জমা</div>
-      <a class="btn btn-ghost btn-sm mt" href="{{ url_for('teacher.exam_results', eid=ex._id) }}">ফলাফল ও কার্যকলাপ দেখুন</a>
+      <div class="row mt" style="gap:8px;flex-wrap:wrap;">
+        <form method="POST" action="{{ url_for('teacher.toggle_exam_live', eid=ex._id) }}">
+          <button class="btn btn-sm {{ 'btn-danger' if ex.is_live else 'btn-success' }}">{{ 'পরীক্ষা বন্ধ করুন' if ex.is_live else 'লাইভ করুন' }}</button>
+        </form>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('teacher.exam_results', eid=ex._id) }}">ফলাফল ও কার্যকলাপ</a>
+      </div>
     </div>
     {% else %}<div class="card"><div class="empty">এখনো কোনো পরীক্ষা তৈরি হয়নি।</div></div>{% endfor %}
   </div>

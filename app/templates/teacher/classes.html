@@ -13,6 +13,8 @@
       <div class="field"><label>ইউটিউব লিংক (বা ভিডিও আইডি)</label><input type="text" name="youtube_link" required placeholder="https://youtu.be/..."></div>
       <div class="field"><label>কোর্স</label><select name="course_id" required>{% for c in courses %}<option value="{{ c._id }}">{{ c.name }}</option>{% endfor %}</select></div>
       <div class="field"><label>বিবরণ</label><textarea name="description"></textarea></div>
+      <div class="field"><label>লেকচার শিট লিংক (ঐচ্ছিক)</label><input type="url" name="lecture_sheet" placeholder="https://drive.google.com/..."></div>
+      <div class="field"><label>প্র্যাকটিস শিট লিংক (ঐচ্ছিক)</label><input type="url" name="practice_sheet" placeholder="https://drive.google.com/..."></div>
       <label class="check" style="width:fit-content;"><input type="checkbox" name="is_live"> লাইভ ক্লাস হিসেবে চিহ্নিত করুন (মনিটরিং চালু)</label>
       <button class="btn btn-block mt">ক্লাস যোগ করুন</button>
     </form>
@@ -26,6 +28,10 @@
         <div><h3>{{ cl.name }}</h3><span class="pill pill-gray">{{ cl.course_name }}</span> {% if cl.is_live %}<span class="tag-live">লাইভ</span>{% endif %}</div>
       </div>
       <p class="muted" style="font-size:14px;">{{ cl.description or 'কোনো বিবরণ নেই।' }}</p>
+      <div class="row" style="gap:6px;flex-wrap:wrap;">
+        {% if cl.lecture_sheet %}<a class="pill pill-blue" href="{{ cl.lecture_sheet }}" target="_blank">📄 লেকচার শিট</a>{% endif %}
+        {% if cl.practice_sheet %}<a class="pill pill-amber" href="{{ cl.practice_sheet }}" target="_blank">✏️ প্র্যাকটিস শিট</a>{% endif %}
+      </div>
       {% if cl.is_live %}<a class="btn btn-ghost btn-sm mt" href="{{ url_for('teacher.live_monitor', cid=cl._id) }}">লাইভ মনিটর খুলুন</a>{% endif %}
     </div>
     {% else %}<div class="card"><div class="empty">এখনো কোনো ক্লাস যোগ করা হয়নি।</div></div>{% endfor %}

@@ -2,7 +2,7 @@
 {% block title %}শিক্ষক ড্যাশবোর্ড{% endblock %}
 {% block heading %}শিক্ষক ড্যাশবোর্ড{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>স্বাগতম, {{ current_user.doc.get('name') }}</h1><p>আপনার ক্লাস, পরীক্ষা ও ডেমনস্ট্রেশন পরিচালনা করুন।</p></div></div>
+<div class="page-head"><div><span class="eyebrow">শিক্ষক প্যানেল</span><h1>স্বাগতম, {{ current_user.doc.get('name') }}</h1><p>আপনার ক্লাস, পরীক্ষা ও ডেমনস্ট্রেশন পরিচালনা করুন।</p></div></div>
 
 <div class="grid grid-4 mb">
   <div class="stat"><div class="label">আমার কোর্স</div><div class="value">{{ stats.courses }}</div></div>
